@@ -4,7 +4,7 @@ from os import path as osp
 import os
 import setproctitle
 import numpy as np
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+# os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 from data.dataset import DeepBasisDataset
 from model.deepbasis_model import DeepBasisModel
 from utils import get_root_logger, get_root_logger,MessageLogger

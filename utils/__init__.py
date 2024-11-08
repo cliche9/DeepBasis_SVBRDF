@@ -6,6 +6,7 @@ from .logger import MessageLogger, get_env_info, get_root_logger, init_tb_logger
 from .render_util import svBRDF, preprocess, numpy_norm,torch_norm
 from .options import dict2str
 # from .parabolic_util import paraMirror
+from .preprocess import MatSynthDataPreprocesser
 
 __all__ = [
     # file_client.py
@@ -31,5 +32,7 @@ __all__ = [
     'check_resume',
     'sizeof_fmt',
     'dict2str',
-    'torch_norm'
+    'torch_norm',
+    # preprocess.py
+    'MatSynthDataPreprocesser'
 ]

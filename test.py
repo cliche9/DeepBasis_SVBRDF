@@ -9,11 +9,11 @@ from os import path as osp
 import os
 import setproctitle
 import numpy as np
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+# os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 from data.data_sampler import EnlargedSampler
 from data.dataset import DeepBasisDataset
 from model.deepbasis_model import DeepBasisModel
-from utils import get_root_logger, get_root_logger,MessageLogger
+from utils import get_root_logger, get_root_logger, MessageLogger, MatSynthDataPreprocesser
 import logging
 
 
@@ -26,10 +26,11 @@ def parse_options():
     parser.add_argument('--name', type=str, required=True, help='experiment name.')
     parser.add_argument("--mode",type=str,default='test',help="train / test / eval")
     parser.add_argument('--save_root',type=str,required=True,help="root path to save results.")
+    parser.add_argument('--dataset_root',type=str,required=True,help="dataset root path.")
     parser.add_argument('--test_data_root',type=str,required=True,help="root path for data.")
     parser.add_argument('--loadpath_network_g',type=str,required=True)
     parser.add_argument('--loadpath_network_l',type=str,required=True)
-    parser.add_argument('--fovZ',type=int,default=2.414)
+    parser.add_argument('--fovZ',type=float,default=2.414)
     
     args = parser.parse_args()
 
@@ -94,4 +95,7 @@ if __name__ == '__main__':
 
     args = parse_options()
     
-    test_pipeline(args)
+    data_preprocesser = MatSynthDataPreprocesser(args)
+    data_preprocesser.resolve_svbrdf(args.dataset_root, args.test_data_root)
+
+    # test_pipeline(args)
