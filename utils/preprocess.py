@@ -52,6 +52,38 @@ class MatSynthDataPreprocesser:
         │ └── ...
         └── test
         """
+        
+        def resolve_single_map(map_path):
+            """Resolve a loaded single texture map.
+
+            Args:
+                Str: path to a single texture map.
+
+            Returns:
+                Tensor: single texture map tensor of shape [3, 256, 256]
+            """
+            def numpy_norm(arr, dim=-1):
+                length = np.sqrt(np.sum(arr * arr, axis = dim, keepdims=True))
+                return arr / (length + 1e-12)
+
+
+            img_bytes = self.file_client.get(map_path, 'brdf')
+            img = imfrombytes(img_bytes, float32=True)[:,:,::-1]
+
+            if suffix == "roughness.png":
+                img = np.mean(img, axis=-1, keepdims=True)
+            elif suffix == "specular.png" or suffix == "diffuse.png":
+                img **= 2.2
+            else: # normal.png
+                img = numpy_norm(img * 2 - 1, -1) * 0.5 + 0.5
+
+            img = img * 2 - 1
+
+            map = img2tensor(img.copy(),bgr2rgb=False).unsqueeze(0)
+            map = F.interpolate(map,size=256,mode='bilinear').squeeze(0)
+
+            return map
+
         # 定义要读取的文件后缀
         prefixes = [str(i) for i in range(1, 6)]
         suffixes = ["normal.png", "diffuse.png", "roughness.png", "specular.png"]
@@ -76,13 +108,7 @@ class MatSynthDataPreprocesser:
 
                         assert(os.path.exists(file_path))
 
-                        img_bytes = self.file_client.get(file_path, 'brdf')
-                        img = imfrombytes(img_bytes, float32=True)[:,:,::-1]
-                        map = img2tensor(img.copy(),bgr2rgb=False).unsqueeze(0)
-                        map = F.interpolate(map,size=256,mode='bilinear').squeeze(0)
-
-                        if (suffix == "roughness.png"):
-                            map = torch.mean(map, 0, keepdim=True)
+                        map = resolve_single_map(file_path)
 
                         single_maps.append(map)
                     batch_svbrdfs.append(torch.cat(single_maps, 0))
@@ -96,8 +122,8 @@ class MatSynthDataPreprocesser:
                 batch_maps = torch.cat([n, d, torch.tile(r, (1,3,1,1)), s], -1)
 
                 for i, prefix in enumerate(prefixes):
-                    output_maps = tensor2img(batch_maps[i]*0.5+0.5)
-                    output_input = tensor2img(batch_inputs[i]*0.5+0.5)
+                    output_maps = tensor2img(batch_maps[i] * 0.5 + 0.5)
+                    output_input = tensor2img(batch_inputs[i] * 0.5 + 0.5)
                     output = np.concatenate((output_input, output_maps), axis=1)
                     output_path = os.path.join(save_folder, material, texture_folder, f"{prefix}.png")
                     imwrite(output, output_path)
@@ -107,7 +133,7 @@ class MatSynthDataPreprocesser:
         surface = self.renderer.surface(384,1.5).to('cpu')
         view_pos = np.array([0,0,self.args.fovZ])
         view_pos= torch.Tensor(view_pos,device="cpu").unsqueeze(0)
-        light_dir, view_dir, _, _ = self.renderer.torch_generate(view_pos, view_pos,pos=surface)
+        light_dir, view_dir, _, _ = self.renderer.torch_generate(view_pos, view_pos, pos=surface)
         self.light_dir = light_dir.cuda()
         self.view_dir = view_dir.cuda()
         x = 192
