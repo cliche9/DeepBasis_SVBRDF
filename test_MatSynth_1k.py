@@ -35,7 +35,7 @@ def parse_options():
     args = parser.parse_args()
 
 
-    args.save_root = osp.join(args.save_root,"test",args.name)
+    # args.save_root = osp.join(args.save_root,"test",args.name)
     makedirs(args.save_root)
 
 
@@ -75,19 +75,31 @@ def test_pipeline(args):
     # initialize loggers
     logger = init_loggers(args)
 
-    # create train and validation dataloaders
-    test_loader = create_dataloader(args)
-
     # create model
     model = DeepBasisModel(args)
 
-    model.validation(test_loader, "test")
-    log_str = f'\t # pixel: {model.metric_results:.4f}\t'
-    logger.info(log_str)
-        
+    # loop material and texture folders
+    svbrdf_folder = args.test_data_root
+    save_folder = args.save_root
+    for material in os.listdir(svbrdf_folder):
+        material_path = os.path.join(svbrdf_folder, material)
 
+        assert(os.path.isdir(material_path))
 
-        
+        for texture_folder in os.listdir(material_path):
+            texture_path = os.path.join(material_path, texture_folder)
+            save_material_path = os.path.join(save_folder, material, texture_folder)
+
+            assert(os.path.isdir(texture_path))
+
+            # create train and validation dataloaders
+            args.test_data_root = texture_path
+            args.save_root = save_material_path
+            test_loader = create_dataloader(args)
+
+            model.validation(test_loader, "test")
+            log_str = f'\t # pixel: {model.metric_results:.4f}\t'
+            logger.info(log_str)
 
 if __name__ == '__main__':
     proc_title = "DeepBasis_test"
@@ -95,4 +107,7 @@ if __name__ == '__main__':
 
     args = parse_options()
     
+    # data_preprocesser = MatSynthDataPreprocesser(args)
+    # data_preprocesser.resolve_svbrdf(args.dataset_root, args.test_data_root)
+
     test_pipeline(args)
