@@ -425,6 +425,25 @@ class DeepBasisModel():
             imwrite(tensor2img(svbrdfs_vis*0.5+0.5),osp.join(self.args.save_root, "visualization",f'{current_iter}.png'))
             self.metric_results /= (idx + 1)
 
+    def validation_for_matsynth_1k(self, dataloader):
+        svbrdfs_pred = torch.ones([len(dataloader),3,256,256*4])
+        self.metric_results = 0
+        for idx, val_data in enumerate(dataloader):
+            self.feed_data(val_data,random=False)
+            self.test()
+            
+            error = torch.abs(self.fake_svbrdf-self.svbrdf).mean()
+            self.metric_results += error
+
+            n, d, r, s = torch.split(self.fake_svbrdf * 0.5 + 0.5,[3,3,1,3],1)
+            svbrdfs_pred[idx] = torch.cat([n, d ** 0.4545, torch.tile(r,(1,3,1,1)), s ** 0.4545], -1).squeeze(0)
+
+            torch.cuda.empty_cache()
+
+        self.metric_results /= (idx + 1)
+        
+        for i, img in enumerate(svbrdfs_pred):
+            imwrite(tensor2img(img),osp.join(self.args.save_root, f'{i}.png'))
 
     def save_visuals(self):
         svbrdf_gt_pre = torch.cat([self.svbrdf,self.fake_svbrdf],-2)
