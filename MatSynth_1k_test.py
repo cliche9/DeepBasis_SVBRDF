@@ -16,6 +16,8 @@ from model.deepbasis_model import DeepBasisModel
 from utils import get_root_logger, get_root_logger, MessageLogger, MatSynthDataPreprocesser
 import logging
 
+from tqdm import tqdm
+
 
 def makedirs(path):
     if not os.path.exists(path):
@@ -81,7 +83,8 @@ def test_pipeline(args):
     # loop material and texture folders
     svbrdf_folder = args.test_data_root
     save_folder = args.save_root
-    for material in os.listdir(svbrdf_folder):
+
+    for material in tqdm(os.listdir(svbrdf_folder), unit='material'):
         material_path = os.path.join(svbrdf_folder, material)
 
         assert(os.path.isdir(material_path))
@@ -97,9 +100,9 @@ def test_pipeline(args):
             args.save_root = save_material_path
             test_loader = create_dataloader(args)
 
-            model.validation(test_loader, "test")
+            model.validation_for_matsynth_1k(test_loader)
             log_str = f'\t # pixel: {model.metric_results:.4f}\t'
-            logger.info(log_str)
+            # logger.info(log_str)
 
 if __name__ == '__main__':
     proc_title = "DeepBasis_test"
