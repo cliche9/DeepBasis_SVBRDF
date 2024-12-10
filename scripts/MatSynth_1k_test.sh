@@ -14,4 +14,5 @@ $PYTHON "/home/sunqi/data/code/DeepBasis_SVBRDF/MatSynth_1k_test.py" \
     --test_data_root "/home/sunqi/data/code/DeepBasis_SVBRDF/source/MatSynth_1k/test" \
     --loadpath_network_g "/home/sunqi/data/code/DeepBasis_SVBRDF/pretrain/net_g_2.414.pth" \
     --loadpath_network_l "/home/sunqi/data/code/DeepBasis_SVBRDF/pretrain/net_l_2.414.pth" \
-    --fovZ "2.414"
+    --viewZ "2.75" \
+    --lightZ "2.197"

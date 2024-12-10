@@ -32,7 +32,8 @@ def parse_options():
     parser.add_argument('--test_data_root',type=str,required=True,help="root path for data.")
     parser.add_argument('--loadpath_network_g',type=str,required=True)
     parser.add_argument('--loadpath_network_l',type=str,required=True)
-    parser.add_argument('--fovZ',type=float,default=2.414)
+    parser.add_argument('--viewZ',type=float,default=2.75)
+    parser.add_argument('--lightZ',type=float,default=2.197)
     
     args = parser.parse_args()
 
@@ -109,8 +110,9 @@ if __name__ == '__main__':
     setproctitle.setproctitle(proc_title)
 
     args = parse_options()
+    args.size = 512
     
-    # data_preprocesser = MatSynthDataPreprocesser(args)
-    # data_preprocesser.resolve_svbrdf(args.dataset_root, args.test_data_root)
+    data_preprocesser = MatSynthDataPreprocesser(args)
+    data_preprocesser.resolve_svbrdf(args.dataset_root, args.test_data_root)
 
-    test_pipeline(args)
+    # test_pipeline(args)

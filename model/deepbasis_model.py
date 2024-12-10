@@ -40,8 +40,9 @@ class DeepBasisModel():
     def init_rendering(self):
         # init lighting direction
         surface = self.renderer.surface(384,1.5).to('cpu')
-        view_pos = np.array([0,0,self.args.fovZ])
+        view_pos = np.array([0,0,self.args.viewZ])
         view_pos= torch.Tensor(view_pos,device="cpu").unsqueeze(0)
+        light_pos = np.array([0,0,self.args.lightZ])
         light_dir, view_dir, _, _ = self.renderer.torch_generate(view_pos, view_pos,pos=surface)
         self.light_dir = light_dir.cuda()
         self.view_dir = view_dir.cuda()
@@ -339,7 +340,7 @@ class DeepBasisModel():
                 light_x = -(y-192) / 384 * 3
                 light_y = (x-192) / 384 * 3
                 with open(os.path.join(self.args.save_root,self.name[0][:-4].replace(".png",".txt")),"w+") as f:
-                    f.write("%f,%f,%.3f %f,%f,%.3f" % (light_x,light_y,self.args.fovZ,light_x,light_y,self.args.fovZ))
+                    f.write("%f,%f,%.3f %f,%f,%.3f" % (light_x,light_y,self.args.viewZ,light_x,light_y,self.args.viewZ))
                 self.pred_svbrdf = self.fake_svbrdf.clone().detach()
                 self.pred_single_basis = self.single_basis
                 self.pred_final_basis = self.final_basis_map

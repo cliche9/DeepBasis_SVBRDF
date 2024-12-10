@@ -82,37 +82,23 @@ def test_pipeline(args):
     model = DeepBasisModel(args)
 
     # loop material and texture folders
-    svbrdf_folder = args.test_data_root
-    save_folder = args.save_root
+    assert(os.path.isdir(args.test_data_root))
 
-    for material in tqdm(os.listdir(svbrdf_folder), unit='material'):
-        material_path = os.path.join(svbrdf_folder, material)
+    # create train and validation dataloaders
+    test_loader = create_dataloader(args)
 
-        assert(os.path.isdir(material_path))
-
-        for texture_folder in os.listdir(material_path):
-            texture_path = os.path.join(material_path, texture_folder)
-            save_material_path = os.path.join(save_folder, material, texture_folder)
-
-            assert(os.path.isdir(texture_path))
-
-            # create train and validation dataloaders
-            args.test_data_root = texture_path
-            args.save_root = save_material_path
-            test_loader = create_dataloader(args)
-
-            model.validation_for_matsynth_1k(test_loader)
-            log_str = f'\t # pixel: {model.metric_results:.4f}\t'
-            # logger.info(log_str)
+    model.validation_for_matsynth_1k(test_loader)
+    log_str = f'\t # pixel: {model.metric_results:.4f}\t'
+    # logger.info(log_str)
 
 if __name__ == '__main__':
     proc_title = "DeepBasis_test"
     setproctitle.setproctitle(proc_title)
 
     args = parse_options()
-    args.size = 512
+    args.size = 256
     
     data_preprocesser = MatSynthDataPreprocesser(args)
-    data_preprocesser.resolve_svbrdf(args.dataset_root, args.test_data_root)
+    data_preprocesser.resolve_svbrdf_by_maps(args.dataset_root, args.test_data_root)
 
     # test_pipeline(args)

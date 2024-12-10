@@ -113,3 +113,5 @@ debug.log
 output
 pretrain
 source/MatSynth_1k
+source/showcase
+datasets
